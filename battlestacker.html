@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Battle Stacker</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+<center><p style="font-size: 50px">Battle Stacker</p></center>
+<canvas id="myCanvas" width="1600" height="900"></canvas>
+
+<center>
+<p style="font-size: 30px">Controls:</p>
+<p style="font-size: 30px">Z - Blue</p>
+<p style="font-size: 30px">M - Red</p>
+</center>
+
+<script>
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+
+	var limiterLeft = false;
+	var limiterRight = false;
+	var leftPressed = false;
+	var rightPressed = false;
+
+	var startingWidth = 300;
+
+	var layerOneWidth = startingWidth;
+	var layerTwoWidth = startingWidth;
+	var layerOneHeight = 20;
+	var layerTwoHeight = 20;
+	var layerOneX = 0;
+	var layerTwoX = 0 + canvas.width/2; 
+	var dxOne = 10;
+	var dxTwo = 10;
+
+	var platformOneX = ((canvas.width/2)/2) - (layerOneWidth/2);
+	var platformTwoX = ((canvas.width/2)/2) - (layerTwoWidth/2); 
+	var platformOneHeight = 20;
+	var platformTwoHeight = 20;
+	var platformOneWidth = startingWidth;
+	var platformTwoWidth = startingWidth;
+
+	var blueLeftBound = platformOneX;
+	var blueRightBound = platformOneX + platformOneWidth;
+	var redLeftBound = platformTwoX + (canvas.width/2);
+	var redRightBound = platformTwoX + platformTwoWidth + (canvas.width/2);
+
+	var platformBlueY = canvas.height-platformOneHeight;
+	var platformBlueColor = "#0095DD";
+	var platformRedY = canvas.height-platformTwoHeight;
+	var platformRedColor = "#FF0000";
+
+	function drawPlatform(x, y, width, height, color, stroke) {
+		ctx.beginPath();
+		ctx.rect(x, y, width, height);
+		if(stroke){
+			ctx.stroke();
+		}
+		ctx.fillStyle = color;
+		ctx.fill();
+	}
+
+	function drawLayerOne() {
+		ctx.clearRect(0, canvas.height - (platformOneHeight + layerOneHeight + 1), canvas.width/2 - 1, layerOneHeight + 2);
+		layerOneX += dxOne;
+		drawPlatform(layerOneX, canvas.height - (platformOneHeight + layerOneHeight), layerOneWidth, layerOneHeight, platformBlueColor, false);
+		if(((layerOneX + layerOneWidth + Math.abs(dxOne)) > (canvas.width/2)) || ((layerOneX <= 0) && (dxOne <= 0))){
+			dxOne *= -1;
+		}
+	}
+
+	function drawLayerTwo(){
+		ctx.clearRect(canvas.width/2 + 2, canvas.height - (platformTwoHeight + layerTwoHeight + 1), canvas.width/2 - 1, layerOneHeight + 2);
+		layerTwoX += dxTwo;
+		drawPlatform(layerTwoX, canvas.height - (platformTwoHeight + layerTwoHeight), layerTwoWidth, layerTwoHeight, platformRedColor, false);
+		if(((layerTwoX + layerTwoWidth + Math.abs(dxTwo)) > (canvas.width)) || (((layerTwoX) <= (canvas.width/2)) && (dxTwo <= 0))){
+			dxTwo *= -1;
+		}
+	}
+
+	function alertMessage(message){
+    	alert(message);
+		document.location.reload();
+		clearInterval(interval);
+	}
+
+	function stackLayerOne() {
+		var temp = dxOne;
+		dxOne = 0;
+		ctx.clearRect(layerOneX, (canvas.height - (platformOneHeight + layerOneHeight)) - 2, (blueLeftBound - layerOneX), layerOneHeight + 3);
+		ctx.clearRect(blueRightBound, canvas.height - (platformOneHeight + layerOneHeight) - 2, ((layerOneX + layerOneWidth) - blueRightBound) + 1, layerOneHeight + 3);
+		if((layerOneX < blueLeftBound) && ((layerOneX + layerOneWidth) < blueLeftBound) || (layerOneX > blueRightBound) && ((layerOneX + layerOneWidth) > blueRightBound) || (layerOneWidth - (blueLeftBound - layerOneX) == 0) || ((blueRightBound - layerOneX) == 0)){
+	    	alertMessage("Blue Missed, Red is the Winner\n(esc to restart)");
+		} else if((platformOneHeight + layerOneHeight) >= canvas.height){
+	    	alertMessage("Blue Wins\n(esc to restart)");
+		} else if(layerOneX < blueLeftBound){
+			blueRightBound = layerOneX + layerOneWidth;
+			layerOneWidth = layerOneWidth - (blueLeftBound - layerOneX);
+		} else if((layerOneX + layerOneWidth) > blueRightBound){
+			blueLeftBound = layerOneX;
+			layerOneWidth = blueRightBound - layerOneX;
+		}
+		platformOneHeight += layerOneHeight;
+		layerOneX = 0;
+		dxOne = temp;
+	}
+
+	function stackLayerTwo() {
+		var tempTwo = dxTwo;
+		dxTwo = 0;
+		ctx.clearRect(layerTwoX, (canvas.height - (platformTwoHeight + layerTwoHeight)) - 2, (redLeftBound - layerTwoX), layerTwoHeight + 3);
+		ctx.clearRect(redRightBound, canvas.height - (platformTwoHeight + layerTwoHeight) - 2, ((layerTwoX + layerTwoWidth) - redRightBound) + 1, layerTwoHeight + 3);
+		if((layerTwoX < redLeftBound) && ((layerTwoX + layerTwoWidth) < redLeftBound) || (layerTwoX > redRightBound) && ((layerTwoX + layerTwoWidth) > redRightBound) || (layerTwoWidth - (redLeftBound - layerTwoX) == 0) || ((redRightBound - layerTwoX) == 0)){
+	    	alertMessage("Red Missed, Blue is the Winner\n(esc to restart)");
+		} else if((platformTwoHeight + layerTwoHeight) >= canvas.height){
+	    	alertMessage("Red Wins\n(esc to restart)");
+		} else if(layerTwoX < redLeftBound){
+			redRightBound = layerTwoX + layerTwoWidth;
+			layerTwoWidth = layerTwoWidth - (redLeftBound - layerTwoX);
+		} else if((layerTwoX + layerTwoWidth) > redRightBound){
+			redLeftBound = layerTwoX;
+			layerTwoWidth = redRightBound - layerTwoX;
+		}
+		platformTwoHeight += layerTwoHeight;
+		layerTwoX = canvas.width/2 + 10;
+		dxTwo = tempTwo;
+	}
+
+	drawPlatform(platformOneX, platformBlueY, platformOneWidth, platformOneHeight, platformBlueColor); // Blue Platform
+	drawPlatform(platformTwoX + canvas.width/2, platformRedY, platformTwoWidth, platformTwoHeight, platformRedColor); //Red Platform
+	drawPlatform(canvas.width/2, 0, 1, canvas.height, "#000000", true); //Center Line
+
+	function draw() {
+		drawLayerOne();
+		drawLayerTwo();
+		drawPlatform(canvas.width/2, 0, 1, canvas.height, "#000000", true); //Center Line
+		if(leftPressed){
+			stackLayerOne();
+		}
+		if(rightPressed){
+			stackLayerTwo();
+		}
+	}
+
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
+	function keyDownHandler(e) {
+	    if(e.key == "m") {
+	    	while(!limiterRight){
+	    		stackLayerTwo();
+	        	limiterRight = true;
+	    	}
+	    }
+	    if((e.key == "z")) {
+	        while(!limiterLeft){
+	        	stackLayerOne();
+	        	limiterLeft = true;
+	        }
+	    }
+	}
+	function keyUpHandler(e) {
+	    if(e.key == "m") {
+	        rightPressed = false;
+	        limiterRight = false;
+	    }
+	    if(e.key == "z") {
+	        leftPressed = false;
+	        limiterLeft = false;
+	    }
+	}
+	var interval = setInterval(draw, 30);
+</script>
+</body>
+</html>
