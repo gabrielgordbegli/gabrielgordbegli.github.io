@@ -9,24 +9,17 @@
     </style>
 </head>
 <body>
-<center><p style="font-size: 50px">Battle Stacker</p></center>
+<center><p style="font-size: 35px">Battle Stacker</p></center>
 <canvas id="myCanvas" width="1600" height="900"></canvas>
 
 <center>
-<p style="font-size: 30px">Controls:</p>
-<p style="font-size: 30px">Z - Blue</p>
-<p style="font-size: 30px">M - Red</p>
+<p style="font-size: 25px"><span id="timer"></span></p>
+<p style="font-size: 25px">Controls:</p>
+<p style="font-size: 25px">Z - Blue</p>
+<p style="font-size: 25px">M - Red</p>
 </center>
 
 <script>
-	/*Lessons Learned
-	-Think about a variable name scheme beforehand, and stick with it
-	-Think about function reusability beforehand, so you don't spend time on two similar functions
-	-Do the math on paper so you don't have to hunt bugs, or do a bodge fix like the repeat center line interval call in this program 
-	-Don't use alerts
-	*/
-	
-	
 	var canvas = document.getElementById("myCanvas");
 	var ctx = canvas.getContext("2d");
 
@@ -62,6 +55,25 @@
 	var platformBlueColor = "#0095DD";
 	var platformRedY = canvas.height-platformTwoHeight;
 	var platformRedColor = "#FF0000";
+
+	var count=10;
+	var counter=setInterval(timer, 1000); //1000 will  run it every 1 second
+	var limiterTimer = false;
+	var timerPressed = false;
+	var blockActions = false;
+
+	function timer(){
+		blockActions = true;
+		count=count-1;
+		document.getElementById("timer").innerHTML="You may begin in " + count + " seconds"; // watch for spelling //Do code for showing the number of seconds here
+		if (count <= 0){
+	     clearInterval(counter);
+	     blockActions = false;
+ 		document.getElementById("timer").innerHTML="Begin!";
+	     //counter ended, do something here
+	     return;
+	  }
+	}
 
 	function drawPlatform(x, y, width, height, color, stroke) {
 		ctx.beginPath();
@@ -159,15 +171,21 @@
 	document.addEventListener("keyup", keyUpHandler, false);
 	function keyDownHandler(e) {
 	    if(e.key == "m") {
-	    	while(!limiterRight){
+	    	while((!limiterRight) && (!blockActions)){
 	    		stackLayerTwo();
 	        	limiterRight = true;
 	    	}
 	    }
 	    if((e.key == "z")) {
-	        while(!limiterLeft){
+	        while((!limiterLeft) && (!blockActions)){
 	        	stackLayerOne();
 	        	limiterLeft = true;
+	        }
+	    }
+	    if((e.key == "t")) {
+	        while(!limiterTimer){
+	        	timer();
+	        	limiterTimer = true;
 	        }
 	    }
 	}
@@ -179,6 +197,10 @@
 	    if(e.key == "z") {
 	        leftPressed = false;
 	        limiterLeft = false;
+	    }
+	    if(e.key == "t") {
+	        timerPressed = false;
+	        limiterTimer = false;
 	    }
 	}
 	var interval = setInterval(draw, 30);
