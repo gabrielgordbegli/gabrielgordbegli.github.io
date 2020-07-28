@@ -57,7 +57,7 @@
 	var platformRedColor = "#FF0000";
 
 	var count=10;
-	var counter=setInterval(timer, 1000); //1000 will  run it every 1 second
+	var counter=setInterval(timer, 1000);
 	var limiterTimer = false;
 	var timerPressed = false;
 	var blockActions = true;
@@ -65,7 +65,7 @@
 	function timer(){
 		blockActions = true;
 		count=count-1;
-		document.getElementById("timer").innerHTML="You may begin in " + count + " seconds"; // watch for spelling //Do code for showing the number of seconds here
+		document.getElementById("timer").innerHTML="Game starts in " + count + " seconds";
 		if (count <= 0){
 	     clearInterval(counter);
 	     blockActions = false;
